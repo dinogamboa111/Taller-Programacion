@@ -41,4 +41,14 @@ public class GeminiServiceImpl implements IGeminiService {
             throw new Exception("Error al conectar con Google Gemini: " + e.getMessage());
         }
     }
+
+    @Override
+    public String summarizeDocument(String rawText) throws Exception {
+        String prompt = "Actúa como un profesor de primaria muy divertido. " +
+                        "Resume el siguiente texto educativo de forma breve, " +
+                        "usando palabras fáciles de entender para un niño de 7 años. " +
+                        "Usa emojis y hazlo muy motivador. Texto: " + rawText;
+        
+        return this.generateContent(prompt);
+    }
 }
