@@ -29,15 +29,15 @@ public class DocumentServiceImpl implements IDocumentService {
     @Override
     public Document uploadDocument(MultipartFile file, Long userId) throws Exception {
         String contentType = file.getContentType();
-        
-        // Validación de formato 
-        if (contentType == null || (!contentType.equals("application/pdf") && 
-            !contentType.equals("application/vnd.openxmlformats-officedocument.wordprocessingml.document"))) {
+
+        // Validación de formato
+        if (contentType == null || (!contentType.equals("application/pdf") &&
+                !contentType.equals("application/vnd.openxmlformats-officedocument.wordprocessingml.document"))) {
             throw new RuntimeException("Formato no compatible. Solo se permite PDF o Word.");
         }
 
         User user = userRepository.findById(userId)
-            .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
+                .orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
 
         String extractedText = "";
 
@@ -60,7 +60,7 @@ public class DocumentServiceImpl implements IDocumentService {
         doc.setFileType(contentType);
         doc.setRawContent(extractedText); // Guardamos el texto extraído
         doc.setUploadDate(LocalDateTime.now());
-        doc.setOwner(user);
+        doc.setUserId(user);
 
         return documentRepository.save(doc);
     }
