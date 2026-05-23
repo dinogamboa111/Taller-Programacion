@@ -18,8 +18,9 @@ public class UserServiceImpl implements IUserService {
     public User registerUser(UserDTO userDTO) {
         User user = new User();
         user.setEmail(userDTO.getEmail());
-        user.setName(userDTO.getName());
-        user.setRole(userDTO.getRole());
+        user.setFirstName(userDTO.getFirstName());
+        user.setLastName(userDTO.getLastName());
+
         user.setPassword(userDTO.getPassword()); // En Sprint 3 agregamos cifrado
         return userRepository.save(user);
     }
@@ -32,10 +33,10 @@ public class UserServiceImpl implements IUserService {
     @Override
     public User updateProfile(Long id, UserDTO userDTO) {
         return userRepository.findById(id).map(user -> {
-            user.setName(userDTO.getName());
+            user.setFirstName(userDTO.getFirstName());
+            user.setLastName(userDTO.getLastName());
             user.setEmail(userDTO.getEmail());
-            // Solo actualiza contraseña si viene en el DTO
-            if (userDTO.getPassword() != null) user.setPassword(userDTO.getPassword());
+            user.setPassword(userDTO.getPassword());
             return userRepository.save(user);
         }).orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
     }

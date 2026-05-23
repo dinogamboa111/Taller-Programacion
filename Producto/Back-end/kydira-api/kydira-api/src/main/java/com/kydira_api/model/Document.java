@@ -10,11 +10,11 @@ import java.time.LocalDateTime;
 public class Document {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private int documentId;
 
     private String fileName;
     private String fileType; // PDF o DOCX
-    
+
     @Column(columnDefinition = "TEXT")
     private String rawContent; // Aquí guardaremos el texto extraído
 
@@ -22,5 +22,11 @@ public class Document {
 
     @ManyToOne
     @JoinColumn(name = "user_id")
-    private User owner; // Quién subió el archivo
+    private User userId;
 }
+
+// document_id
+// user_id
+// file_name
+// extracted_text
+// processing_date

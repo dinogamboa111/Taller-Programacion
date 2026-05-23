@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import lombok.AllArgsConstructor;
+import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "users") // Esta tabla se creará automáticamente en Supabase
@@ -14,7 +15,11 @@ public class User {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private int userId;
+
+    private String firstName;
+
+    private String lastName;
 
     @Column(nullable = false, unique = true)
     private String email;
@@ -22,8 +27,5 @@ public class User {
     @Column(nullable = false)
     private String password;
 
-    @Column(nullable = false)
-    private String name;
-
-    private String role; 
+    private LocalDateTime registrationDate;
 }
