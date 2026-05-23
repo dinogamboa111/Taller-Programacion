@@ -1,5 +1,6 @@
 package com.kydira_api.service.impl;
 
+import com.kydira_api.model.Quiz;
 import com.kydira_api.service.IGeminiService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -23,7 +24,6 @@ public class GeminiServiceImpl implements IGeminiService {
     public String generateContent(String prompt) throws Exception {
         String url = API_URL + apiKey;
 
-        // Estructura simplificada del cuerpo de la petición para Gemini
         Map<String, Object> requestBody = Map.of(
             "contents", List.of(
                 Map.of("parts", List.of(
@@ -33,9 +33,8 @@ public class GeminiServiceImpl implements IGeminiService {
         );
 
         try {
-            // Aquí se realiza la llamada POST a Google
+            // Mantenemos tu lógica exacta
             Map<String, Object> response = restTemplate.postForObject(url, requestBody, Map.class);
-            // Nota: En el Sprint 3 mapearemos la respuesta JSON completa a un DTO
             return response.toString(); 
         } catch (Exception e) {
             throw new Exception("Error al conectar con Google Gemini: " + e.getMessage());
@@ -50,5 +49,17 @@ public class GeminiServiceImpl implements IGeminiService {
                         "Usa emojis y hazlo muy motivador. Texto: " + rawText;
         
         return this.generateContent(prompt);
+    }
+
+    // Nuevo método que usa tu generateContent sin cambiar nada de lo anterior
+    @Override
+    public Quiz generateQuizContent(String rawText) throws Exception {
+        String prompt = "Genera una trivia de 3 preguntas basada en: " + rawText;
+        
+        // Simplemente llamamos a tu método que ya funciona
+        this.generateContent(prompt); 
+        
+        // Retornamos un objeto vacío por ahora para que compile el Sprint 2
+        return new Quiz(); 
     }
 }

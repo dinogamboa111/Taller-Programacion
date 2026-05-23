@@ -40,4 +40,18 @@ public class UserServiceImpl implements IUserService {
             return userRepository.save(user);
         }).orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
     }
+
+    @Override
+public User login(String email, String password) {
+    // Buscamos al usuario por email
+    User user = userRepository.findByEmail(email)
+            .orElseThrow(() -> new RuntimeException("Correo electrónico no encontrado"));
+
+    // Validamos la contraseña (en el Sprint 3 podrías usar BCrypt)
+    if (!user.getPassword().equals(password)) {
+        throw new RuntimeException("Contraseña incorrecta");
+    }
+
+    return user;
+}
 }

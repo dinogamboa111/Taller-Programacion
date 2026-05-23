@@ -11,4 +11,6 @@ public interface IUserService {
     Optional<User> findByEmail(String email);
 
     User updateProfile(Long id, UserDTO userDTO); // Para la US-14
+
+    User login(String email, String password);
 }

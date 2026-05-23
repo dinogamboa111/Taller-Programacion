@@ -17,6 +17,9 @@ public class Quiz {
     @ManyToOne
     @JoinColumn(name = "document_id")
     private Document documentId;
+    @ManyToOne
+    @JoinColumn(name = "user_id")
+    private User userId;
 }
 
 // quiz_id
