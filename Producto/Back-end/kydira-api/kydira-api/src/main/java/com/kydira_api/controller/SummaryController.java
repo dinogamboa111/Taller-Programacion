@@ -21,7 +21,7 @@ public class SummaryController {
     private IGeminiService geminiService;
 
     @GetMapping("/generate/{documentId}")
-    public ResponseEntity<?> generateSummary(@PathVariable Long documentId) {
+    public ResponseEntity<?> generateSummary(@PathVariable Integer documentId) {
         try {
             Document doc = documentRepository.findById(documentId)
                 .orElseThrow(() -> new RuntimeException("Documento no encontrado"));
