@@ -18,6 +18,9 @@ public class Document {
     @Column(columnDefinition = "TEXT")
     private String rawContent; // Aquí guardaremos el texto extraído
 
+    @Column(columnDefinition = "TEXT")
+    private String apiResponse; // Para auditoría del JSON de Gemini [cite: 119]
+
     private LocalDateTime uploadDate;
 
     @ManyToOne

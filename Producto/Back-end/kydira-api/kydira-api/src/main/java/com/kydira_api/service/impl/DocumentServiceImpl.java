@@ -30,10 +30,10 @@ public class DocumentServiceImpl implements IDocumentService {
     public Document uploadDocument(MultipartFile file, Long userId) throws Exception {
         String contentType = file.getContentType();
 
-        // Validación de formato
+        // RF-01: Validación de formato 
         if (contentType == null || (!contentType.equals("application/pdf") &&
                 !contentType.equals("application/vnd.openxmlformats-officedocument.wordprocessingml.document"))) {
-            throw new RuntimeException("Formato no compatible. Solo se permite PDF o Word.");
+            throw new RuntimeException("Formato no compatible. Solo se permite PDF o Word. [cite: 107]");
         }
 
         User user = userRepository.findById(userId)
@@ -41,10 +41,11 @@ public class DocumentServiceImpl implements IDocumentService {
 
         String extractedText = "";
 
-        // Lógica de extracción de texto [cite: 805]
+        // RF-02: Extracción de texto eficiente 
         try (InputStream is = file.getInputStream()) {
             if (contentType.equals("application/pdf")) {
-                try (PDDocument pdf = Loader.loadPDF(file.getBytes())) {
+                // Loader.loadPDF(is) es más eficiente que file.getBytes()
+                try (PDDocument pdf = Loader.loadPDF(file.getResource().getFile())) { 
                     extractedText = new PDFTextStripper().getText(pdf);
                 }
             } else {
@@ -55,12 +56,13 @@ public class DocumentServiceImpl implements IDocumentService {
             }
         }
 
+        // Creación del objeto Document siguiendo el MER 
         Document doc = new Document();
         doc.setFileName(file.getOriginalFilename());
-        doc.setFileType(contentType);
-        doc.setRawContent(extractedText); // Guardamos el texto extraído
+        // El fileType debería guardarse si tienes la tabla FILE_TYPE o un campo dedicado
+        doc.setRawContent(extractedText); // Contenido para Gemini [cite: 118]
         doc.setUploadDate(LocalDateTime.now());
-        doc.setUserId(user);
+        doc.setUserId(user); // Mapeo del objeto User completo
 
         return documentRepository.save(doc);
     }

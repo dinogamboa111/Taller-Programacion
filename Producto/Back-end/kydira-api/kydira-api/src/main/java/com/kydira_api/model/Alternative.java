@@ -17,5 +17,5 @@ public class Alternative {
 
     @ManyToOne
     @JoinColumn(name = "question_id")
-    private Question questionId;
+    private Question question;
 }
