@@ -1,8 +1,10 @@
 package com.kydira_api.service.impl;
 
 import com.kydira_api.model.Document;
+import com.kydira_api.model.FileType;
 import com.kydira_api.model.User;
 import com.kydira_api.repository.DocumentRepository;
+import com.kydira_api.repository.FileTypeRepository;
 import com.kydira_api.repository.UserRepository;
 import com.kydira_api.service.IDocumentService;
 import org.apache.pdfbox.Loader;
@@ -25,6 +27,9 @@ public class DocumentServiceImpl implements IDocumentService {
 
     @Autowired
     private UserRepository userRepository;
+
+    @Autowired
+    private FileTypeRepository fileTypeRepository;
 
     @Override
     public Document uploadDocument(MultipartFile file, Long userId) throws Exception {
@@ -59,11 +64,17 @@ public class DocumentServiceImpl implements IDocumentService {
         // Creación del objeto Document siguiendo el MER 
         Document doc = new Document();
         doc.setFileName(file.getOriginalFilename());
-        // El fileType debería guardarse si tienes la tabla FILE_TYPE o un campo dedicado
-        doc.setRawContent(extractedText); // Contenido para Gemini [cite: 118]
-        doc.setUploadDate(LocalDateTime.now());
-        doc.setUserId(user); // Mapeo del objeto User completo
 
+        // Línea que falta — deriva el nombre del tipo desde el contentType que ya validaste arriba
+        String typeName = contentType.equals("application/pdf") ? "PDF" : "DOCX";
+
+        FileType fileType = fileTypeRepository.findByTypeName(typeName)
+            .orElseThrow(() -> new RuntimeException("Tipo '" + typeName + "' no encontrado en el catálogo."));
+        doc.setFileType(fileType);
+
+        doc.setRawContent(extractedText);
+        doc.setUploadDate(LocalDateTime.now());
+        doc.setUserId(user);
         return documentRepository.save(doc);
     }
 }

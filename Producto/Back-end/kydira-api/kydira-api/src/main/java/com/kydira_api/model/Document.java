@@ -13,7 +13,11 @@ public class Document {
     private int documentId;
 
     private String fileName;
-    private String fileType; // PDF o DOCX
+    
+    
+    @ManyToOne
+    @JoinColumn(name = "file_type_id", nullable = false)
+    private FileType fileType;
 
     @Column(columnDefinition = "TEXT")
     private String rawContent; // Aquí guardaremos el texto extraído
