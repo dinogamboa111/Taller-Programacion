@@ -8,21 +8,19 @@ import java.time.LocalDateTime;
 @Table(name = "quiz")
 @Data
 public class Quiz {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int quizId;
+
     private String title;
+
     private LocalDateTime generationDate;
 
     @ManyToOne
     @JoinColumn(name = "document_id")
     private Document documentId;
-    @ManyToOne
-    @JoinColumn(name = "user_id")
-    private User userId;
-}
 
-// quiz_id
-// title
-// generation_date
-// DOCUMENT_document_id
+    // user_id eliminado — el usuario se obtiene navegando documentId.userId
+    // Usar QuizRepository.findByDocumentId_UserId_UserId(Long userId) para filtrar por usuario
+}

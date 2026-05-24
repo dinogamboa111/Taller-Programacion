@@ -23,22 +23,17 @@ public class QuizServiceImpl implements IQuizService {
     private IGeminiService geminiService;
 
     @Override
-    @Transactional // Importante para asegurar que se guarde todo o nada
+    @Transactional
     public Quiz createQuizFromDocument(Integer documentId) throws Exception {
-        // 1. Buscar el documento
         Document doc = documentRepository.findById(documentId)
-                .orElseThrow(() -> new RuntimeException("Documento no encontrado"));
+            .orElseThrow(() -> new RuntimeException("Documento no encontrado"));
 
-        // 2. Obtener el JSON de la trivia desde Gemini usando el rawContent
-        // Aquí asumimos que geminiService ya devuelve la estructura mapeada
         Quiz newQuiz = geminiService.generateQuizContent(doc.getRawContent());
 
-        // 3. Vincular el Quiz con el documento y el usuario (tutor)
         newQuiz.setDocumentId(doc);
-        newQuiz.setUserId(doc.getUserId()); // O doc.getUserId() según tu entidad
+        // newQuiz.setUserId(...) eliminado — el usuario se infiere vía doc.getUserId()
+        // No hay riesgo de inconsistencia: un solo camino hacia el usuario
 
-        // 4. Guardar en cascada (Gracias al CascadeType.ALL que pusimos antes)
-        // Esto guardará el Quiz, sus Questions y sus Alternatives de una vez
         return quizRepository.save(newQuiz);
     }
 }
