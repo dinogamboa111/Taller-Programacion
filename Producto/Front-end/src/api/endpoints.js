@@ -1,0 +1,26 @@
+export const ENDPOINTS = {
+  AUTH: {
+    LOGIN:    '/auth/login',
+    LOGOUT:   '/auth/logout',
+    ME:       '/auth/me',
+    REGISTER: '/auth/register',
+  },
+  ACTIVIDADES: {
+    UPLOAD:  '/actividades/upload',
+    STATUS:  (id) => `/actividades/${id}/status`,
+    RESUMEN: (id) => `/actividades/${id}/resumen`,
+    TRIVIA:  (id) => `/actividades/${id}/trivia`,
+    LIST:    '/actividades',
+    DELETE:  (id) => `/actividades/${id}`,
+  },
+  PERFIL: {
+    GET:         '/perfil',
+    UPDATE:      '/perfil',
+    ESTUDIANTES: '/perfil/estudiantes',
+  },
+  ESTADISTICAS: {
+    GET:           '/estadisticas',
+    BY_STUDENT:    (id) => `/estadisticas/estudiante/${id}`,
+    SUBMIT_TRIVIA: '/estadisticas/trivia',
+  },
+};

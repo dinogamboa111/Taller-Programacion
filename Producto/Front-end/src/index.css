@@ -1,0 +1,330 @@
+@import 'bootstrap/dist/css/bootstrap.min.css';
+
+@import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;900&display=swap');
+
+:root {
+  --primary-color: #0b1a4a;
+  --secondary-color: #173887;
+  --accent-yellow: #f8c950;
+  --text-white: #ffffff;
+  --text-light: #d0d5ef;
+}
+
+body {
+  margin: 0;
+  font-family: 'Nunito', sans-serif;
+  color: var(--text-white);
+  min-height: 100vh;
+  overflow: hidden;
+  background-color: #000;
+}
+
+a {
+  text-decoration: none;
+}
+
+/* Glassmorphism Classes */
+.glass-panel {
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 20px;
+}
+
+.glass-nav {
+  background: rgba(11, 26, 74, 0.3);
+  backdrop-filter: blur(8px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Base Buttons */
+.btn-yellow {
+  background-color: var(--accent-yellow);
+  color: #333;
+  font-weight: 900;
+  border-radius: 30px;
+  padding: 12px 30px;
+  border: none;
+  font-size: 1.2rem;
+  box-shadow: 0 4px 15px rgba(248, 201, 80, 0.4);
+  transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.btn-yellow:hover {
+  transform: translateY(-5px) scale(1.05);
+  background-color: #ffd666;
+  box-shadow: 0 8px 25px rgba(248, 201, 80, 0.6);
+  color: #333;
+}
+
+.btn-space {
+  background: linear-gradient(45deg, #1D2671, #C33764);
+  color: white;
+  font-weight: 900;
+  border-radius: 30px;
+  padding: 12px 30px;
+  border: none;
+  font-size: 1.2rem;
+  box-shadow: 0 4px 15px rgba(29, 38, 113, 0.4);
+  transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.btn-space:hover {
+  transform: translateY(-5px) scale(1.05);
+  box-shadow: 0 8px 25px rgba(195, 55, 100, 0.6);
+  color: white;
+}
+
+.btn-dino {
+  background: linear-gradient(45deg, #11998e, #38ef7d);
+  color: white;
+  font-weight: 900;
+  border-radius: 30px;
+  padding: 12px 30px;
+  border: none;
+  font-size: 1.2rem;
+  box-shadow: 0 4px 15px rgba(17, 153, 142, 0.4);
+  transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.btn-dino:hover {
+  transform: translateY(-5px) scale(1.05);
+  box-shadow: 0 8px 25px rgba(56, 239, 125, 0.6);
+  color: white;
+}
+
+/* Animations */
+@keyframes breathing {
+  0% {
+    transform: scale(1);
+  }
+
+  50% {
+    transform: scale(1.02);
+  }
+
+  100% {
+    transform: scale(1);
+  }
+}
+
+@keyframes float {
+  0% {
+    transform: translateY(0px) rotate(0deg);
+  }
+
+  50% {
+    transform: translateY(-10px) rotate(1deg);
+  }
+
+  100% {
+    transform: translateY(0px) rotate(0deg);
+  }
+}
+
+@keyframes floatReverse {
+  0% {
+    transform: translateY(0px) rotate(0deg);
+  }
+
+  50% {
+    transform: translateY(10px) rotate(-1deg);
+  }
+
+  100% {
+    transform: translateY(0px) rotate(0deg);
+  }
+}
+
+.breathing-anim {
+  animation: breathing 4s ease-in-out infinite;
+}
+
+.float-anim {
+  animation: float 6s ease-in-out infinite;
+}
+
+.float-anim-reverse {
+  animation: floatReverse 6s ease-in-out infinite;
+}
+
+/* Mask for generated images */
+.img-blend {
+  mix-blend-mode: screen;
+}
+
+.main-title {
+  font-size: clamp(3rem, 8vw, 6rem);
+  font-weight: 900;
+  line-height: 1.1;
+  text-shadow: 0px 10px 20px rgba(0, 0, 0, 0.5);
+  margin-bottom: 20px;
+  letter-spacing: 2px;
+}
+
+/* Particles Styles */
+.particles-container {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+  z-index: 1;
+  pointer-events: none;
+}
+
+.star {
+  position: absolute;
+  width: 4px;
+  height: 4px;
+  background-color: #ffffff;
+  border-radius: 50%;
+  box-shadow: 0 0 15px 2px #ffffff, 0 0 30px 5px rgba(255, 255, 255, 0.8);
+  opacity: 0;
+  animation: twinkle 4s infinite ease-in-out;
+}
+
+.meteor {
+  position: absolute;
+  width: 4px;
+  height: 50px;
+  background: linear-gradient(to bottom, #ff8c00, transparent);
+  border-radius: 2px;
+  box-shadow: 0 0 15px 3px rgba(255, 140, 0, 0.9), 0 0 30px 5px rgba(255, 140, 0, 0.6);
+  opacity: 0;
+  transform: rotate(45deg);
+  animation: fall 8s infinite linear;
+}
+
+@keyframes twinkle {
+  0% { opacity: 0; transform: scale(0.5); }
+  50% { opacity: 1; transform: scale(1.8); }
+  100% { opacity: 0; transform: scale(0.5); }
+}
+
+@keyframes fall {
+  0% { opacity: 0; transform: translate(-50px, -150px) rotate(45deg) scale(1); }
+  15% { opacity: 1; transform: translate(15vw, 15vh) rotate(45deg) scale(2); }
+  60% { opacity: 0; transform: translate(60vw, 60vh) rotate(45deg) scale(0.5); }
+  100% { opacity: 0; transform: translate(100vw, 100vh) rotate(45deg) scale(0.1); }
+}
+
+/* Custom placeholder color */
+.login-input::placeholder {
+  color: rgba(255, 255, 255, 0.7) !important;
+}
+
+/* ── Transición suave al cambiar nivel ── */
+.app-bg {
+  transition: filter 0.6s ease;
+}
+
+/* ═══════════════════════════════════════════
+   Nivel SUAVE — menos estímulo, sin movimiento
+   ═══════════════════════════════════════════ */
+
+/* Fondo desaturado y oscurecido */
+[data-intensity="soft"] .app-bg {
+  filter: saturate(0.55) brightness(0.72);
+}
+
+/* Partículas muy tenues */
+[data-intensity="soft"] .particles-container {
+  filter: opacity(0.2);
+}
+[data-intensity="soft"] .star {
+  animation-duration: 12s !important;
+}
+[data-intensity="soft"] .meteor {
+  animation-duration: 22s !important;
+}
+
+/* Cero movimiento continuo */
+[data-intensity="soft"] .float-anim,
+[data-intensity="soft"] .float-anim-reverse,
+[data-intensity="soft"] .breathing-anim {
+  animation: none;
+}
+
+/* Botones sin salto */
+[data-intensity="soft"] .btn-yellow:hover,
+[data-intensity="soft"] .btn-space:hover,
+[data-intensity="soft"] .btn-dino:hover {
+  transform: none !important;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.3) !important;
+}
+
+/* Título menos agresivo */
+[data-intensity="soft"] .main-title {
+  font-size: clamp(2.2rem, 6vw, 4rem) !important;
+  text-shadow: 0px 4px 10px rgba(0,0,0,0.4);
+  letter-spacing: 1px;
+}
+
+
+/* ═══════════════════════════════════════════
+   Nivel CALMA — ambiente de foco total
+   ═══════════════════════════════════════════ */
+
+/* Fondo borroso: desaparece el detalle, queda solo color suave */
+[data-intensity="calm"] .app-bg {
+  filter: saturate(0.1) brightness(0.35);
+}
+
+/* Sin partículas */
+[data-intensity="calm"] .particles-container {
+  display: none;
+}
+
+/* Cero animaciones CSS */
+[data-intensity="calm"] .float-anim,
+[data-intensity="calm"] .float-anim-reverse,
+[data-intensity="calm"] .breathing-anim,
+[data-intensity="calm"] .star,
+[data-intensity="calm"] .meteor {
+  animation: none;
+}
+
+/* Botones apagados: sin glows, sin salto, sin degradados intensos */
+[data-intensity="calm"] .btn-yellow {
+  background-color: #9e8a3a !important;
+  box-shadow: none !important;
+  filter: none;
+}
+[data-intensity="calm"] .btn-space {
+  background: #2a3060 !important;
+  box-shadow: none !important;
+}
+[data-intensity="calm"] .btn-dino {
+  background: #1e5e50 !important;
+  box-shadow: none !important;
+}
+[data-intensity="calm"] .btn-yellow:hover,
+[data-intensity="calm"] .btn-space:hover,
+[data-intensity="calm"] .btn-dino:hover {
+  transform: none !important;
+  box-shadow: none !important;
+}
+
+/* Paneles sólidos: sin blur glass (que añade complejidad visual) */
+[data-intensity="calm"] .glass-panel,
+[data-intensity="calm"] .glass-nav {
+  background: rgba(8, 18, 60, 0.94) !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+}
+
+/* Título más pequeño y sin sombra dramática */
+[data-intensity="calm"] .main-title {
+  font-size: clamp(1.8rem, 5vw, 3rem) !important;
+  text-shadow: none !important;
+  letter-spacing: 0 !important;
+}
+
+/* Estrellas y meteoros: ocultar del todo por si acaso */
+[data-intensity="calm"] .star,
+[data-intensity="calm"] .meteor {
+  display: none;
+}
