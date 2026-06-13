@@ -233,4 +233,68 @@ const Upload = () => {
   );
 };
 
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   Upload con backend real
+   Uso: importar handleUploadReal y reemplazar las llamadas a simulate()
+   cuando el backend este disponible.
+
+   Ejemplo de uso en los botones:
+     onClick={() => handleUploadReal(file, user.userId, 'summary', navigate)}
+     onClick={() => handleUploadReal(file, user.userId, 'trivia',  navigate)}
+   ───────────────────────────────────────────────────────────────────────────── */
+
+import { documentoService } from '../services/documentoService';
+import { resumenService    } from '../services/resumenService';
+
+// Sube el archivo, genera el contenido solicitado y navega al destino
+// Params:
+//   file      - File seleccionado por el usuario
+//   userId    - ID del usuario en sesion
+//   type      - 'summary' | 'trivia'
+//   navigate  - funcion navigate de react-router
+//   setLoading - setter del estado de carga
+//   setError   - setter para mostrar errores (opcional)
+export const handleUploadReal = async (file, userId, type, navigate, setLoading, setError) => {
+  try {
+    setLoading(true);
+
+    // Paso 1: subir el documento al backend
+    const documento = await documentoService.uploadDocumento(file, userId);
+    const documentId = documento.documentId;
+
+    if (type === 'summary') {
+      // Paso 2a: generar resumen con IA
+      const resumenData = await resumenService.generarResumen(documentId);
+
+      navigate('/actividades/resumen', {
+        state: {
+          file:       { name: file.name, size: file.size },
+          documentId,
+          // El backend devuelve { fileName, summary }
+          // Se adapta al shape que espera Resumen.jsx
+          summaryReal: resumenData,
+        },
+      });
+    } else {
+      // Paso 2b: para trivia, solo navegar con el documentId
+      // El quiz se genera desde la vista de trivia
+      navigate('/actividades/trivia', {
+        state: {
+          file:       { name: file.name, size: file.size },
+          documentId,
+        },
+      });
+    }
+  } catch (err) {
+    const msg = err.response?.data?.message || err.message || 'Error al procesar el archivo';
+    if (setError) setError(msg);
+  } finally {
+    setLoading(false);
+  }
+};
+
+
+
+
 export default Upload;
