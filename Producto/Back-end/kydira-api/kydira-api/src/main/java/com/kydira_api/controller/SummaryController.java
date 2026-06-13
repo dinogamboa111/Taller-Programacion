@@ -11,7 +11,7 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/api/summary")
-@CrossOrigin(origins = "*")
+
 public class SummaryController {
 
     @Autowired
