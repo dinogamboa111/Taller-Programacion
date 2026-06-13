@@ -7,12 +7,16 @@ import com.kydira_api.service.IUserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import java.util.Optional;
+import org.springframework.security.crypto.password.PasswordEncoder; 
 
 @Service
 public class UserServiceImpl implements IUserService {
 
     @Autowired
     private UserRepository userRepository;
+
+    @Autowired
+    private PasswordEncoder passwordEncoder;
 
     @Override
     public User registerUser(UserDTO userDTO) {
@@ -21,7 +25,8 @@ public class UserServiceImpl implements IUserService {
         user.setFirstName(userDTO.getFirstName());
         user.setLastName(userDTO.getLastName());
 
-        user.setPassword(userDTO.getPassword()); // En Sprint 3 agregamos cifrado
+        // ¡Excelente adaptación! Encriptamos y guardamos la entidad directamente
+        user.setPassword(passwordEncoder.encode(userDTO.getPassword()));
         return userRepository.save(user);
     }
 
@@ -36,22 +41,23 @@ public class UserServiceImpl implements IUserService {
             user.setFirstName(userDTO.getFirstName());
             user.setLastName(userDTO.getLastName());
             user.setEmail(userDTO.getEmail());
-            user.setPassword(userDTO.getPassword());
+            
+            user.setPassword(passwordEncoder.encode(userDTO.getPassword()));
+            
             return userRepository.save(user);
         }).orElseThrow(() -> new RuntimeException("Usuario no encontrado"));
     }
 
     @Override
-public User login(String email, String password) {
-    // Buscamos al usuario por email
-    User user = userRepository.findByEmail(email)
-            .orElseThrow(() -> new RuntimeException("Correo electrónico no encontrado"));
+    public User login(String email, String password) {
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("Correo electrónico no encontrado"));
 
-    // Validamos la contraseña (en el Sprint 3 podrías usar BCrypt)
-    if (!user.getPassword().equals(password)) {
-        throw new RuntimeException("Contraseña incorrecta");
+        // Se actualiza la validación para comparar la contraseña plana contra la encriptada en la BD
+        if (!passwordEncoder.matches(password, user.getPassword())) {
+            throw new RuntimeException("Contraseña incorrecta");
+        }
+
+        return user;
     }
-
-    return user;
-}
 }
