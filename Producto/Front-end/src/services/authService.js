@@ -4,10 +4,10 @@ import { ENDPOINTS } from '../api/endpoints';
 const USE_MOCK = import.meta.env.VITE_USE_MOCK === 'true';
 
 export const authService = {
-  async login(username, password) {
+  async login(email, password) {
     if (USE_MOCK) {
-      if (username === 'usuario' && password === '123') {
-        const mockUser = { name: 'Usuario Prueba', username };
+      if (email === 'usuario' && password === '123') {
+        const mockUser = { id: 1, firstName: 'Usuario', lastName: 'Prueba', email };
         localStorage.setItem('auth_token', 'mock_token');
         localStorage.setItem('auth_user', JSON.stringify(mockUser));
         return mockUser;
@@ -15,10 +15,31 @@ export const authService = {
       throw new Error('Credenciales incorrectas');
     }
 
-    const { data } = await api.post(ENDPOINTS.AUTH.LOGIN, { username, password });
+    // Llamada al backend de Spring Boot (Endpoint 1)
+    const { data } = await api.post(ENDPOINTS.AUTH.LOGIN, { email, password });
+    
+    // Mapeamos los datos exactos que nos devuelve el AuthController
+    const userObj = {
+      id: data.userId,
+      email: data.email,
+      firstName: data.firstName,
+      lastName: data.lastName
+    };
+
     localStorage.setItem('auth_token', data.token);
-    localStorage.setItem('auth_user', JSON.stringify(data.user));
-    return data.user;
+    localStorage.setItem('auth_user', JSON.stringify(userObj));
+    return userObj;
+  },
+
+  async register(firstName, lastName, email, password) {
+    // Llamada al backend de Spring Boot (Endpoint 2)
+    const { data } = await api.post(ENDPOINTS.AUTH.REGISTER, { 
+      firstName, 
+      lastName, 
+      email, 
+      password 
+    });
+    return data;
   },
 
   async logout() {

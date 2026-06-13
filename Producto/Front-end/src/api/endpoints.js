@@ -3,7 +3,7 @@ export const ENDPOINTS = {
     LOGIN:    '/auth/login',
     LOGOUT:   '/auth/logout',
     ME:       '/auth/me',
-    REGISTER: '/auth/register',
+    REGISTER: '/users/register',
   },
   ACTIVIDADES: {
     UPLOAD:  '/actividades/upload',
@@ -15,7 +15,7 @@ export const ENDPOINTS = {
   },
   PERFIL: {
     GET:         '/perfil',
-    UPDATE:      '/perfil',
+    UPDATE:      (id) => `/users/profile/${id}`,
     ESTUDIANTES: '/perfil/estudiantes',
   },
   ESTADISTICAS: {
