@@ -249,4 +249,44 @@ const Resumen = () => {
   );
 };
 
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   Soporte para datos reales del backend
+   Cuando se navegue desde handleUploadReal, el state traera summaryReal
+   en lugar de summary (mock). Este helper normaliza ambos formatos.
+
+   Shape backend: { fileName, summary (texto plano) }
+   Shape mock:    { title, readTime, tags, highlights, sections }
+   ───────────────────────────────────────────────────────────────────────────── */
+
+// Convierte la respuesta del backend al shape que espera el render de Resumen
+// Params: summaryReal - objeto { fileName, summary } del backend
+// Returns: objeto compatible con el shape mock
+export const adaptarResumenReal = (summaryReal) => {
+  if (!summaryReal) return null;
+
+  return {
+    title:      summaryReal.fileName || 'Resumen generado',
+    readTime:   'Generado por IA',
+    tags:       [],
+    highlights: [],
+    // El texto completo se muestra como una sola seccion
+    sections: [
+      {
+        emoji:   '📄',
+        heading: 'Resumen del documento',
+        body:    summaryReal.summary || '',
+      },
+    ],
+  };
+};
+
+// Para usar en Resumen.jsx, reemplazar la linea:
+//   const { file, summary, trivia } = location.state || {};
+// por:
+//   const { file, summary: summaryMock, summaryReal, trivia, documentId } = location.state || {};
+//   const summary = summaryMock || adaptarResumenReal(summaryReal);
+
+
+
 export default Resumen;

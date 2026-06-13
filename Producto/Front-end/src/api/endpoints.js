@@ -23,4 +23,20 @@ export const ENDPOINTS = {
     BY_STUDENT:    (id) => `/estadisticas/estudiante/${id}`,
     SUBMIT_TRIVIA: '/estadisticas/trivia',
   },
+
+
+
+  
+// -- Documentos  ---
+  DOCUMENTOS: {
+    UPLOAD:       '/documents/upload',
+    LIST_BY_USER: (userId) => `/documents/user/${userId}`,
+    DELETE:       (id)     => `/documents/${id}`,
+  },
+
+  // -- Resumenes  --
+  RESUMENES: {
+    GENERATE: (documentId) => `/summary/generate/${documentId}`,
+  },
+
 };
