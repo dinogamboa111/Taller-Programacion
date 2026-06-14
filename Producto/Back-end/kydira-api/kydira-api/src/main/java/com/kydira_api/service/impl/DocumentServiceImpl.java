@@ -50,7 +50,7 @@ public class DocumentServiceImpl implements IDocumentService {
         try (InputStream is = file.getInputStream()) {
             if (contentType.equals("application/pdf")) {
                 // Loader.loadPDF(is) es más eficiente que file.getBytes()
-                try (PDDocument pdf = Loader.loadPDF(file.getResource().getFile())) { 
+                try (PDDocument pdf = Loader.loadPDF(file.getBytes())) { 
                     extractedText = new PDFTextStripper().getText(pdf);
                 }
             } else {
