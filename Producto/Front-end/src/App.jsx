@@ -13,6 +13,7 @@ import Resumen from './pages/Resumen';
 import Trivia from './pages/Trivia';
 import Stats from './pages/Stats';
 import Login from './pages/Login';
+import Biblioteca from './pages/Biblioteca';
 import About from './pages/About';
 import Features from './pages/Features';
 import './index.css';
@@ -100,10 +101,11 @@ const AppContent = () => {
           <Route path="/login"         element={<Login />} />
 
           <Route path="/perfil"              element={<ProtectedRoute><Profile /></ProtectedRoute>} />
-          <Route path="/actividades"         element={<ProtectedRoute><Upload  /></ProtectedRoute>} />
-          <Route path="/actividades/resumen" element={<ProtectedRoute><Resumen /></ProtectedRoute>} />
-          <Route path="/actividades/trivia"  element={<ProtectedRoute><Trivia  /></ProtectedRoute>} />
-          <Route path="/juegos"              element={<ProtectedRoute><Stats   /></ProtectedRoute>} />
+          <Route path="/actividades"         element={<ProtectedRoute><Upload    /></ProtectedRoute>} />
+          <Route path="/actividades/resumen" element={<ProtectedRoute><Resumen  /></ProtectedRoute>} />
+          <Route path="/actividades/trivia"  element={<ProtectedRoute><Trivia   /></ProtectedRoute>} />
+          <Route path="/biblioteca"          element={<ProtectedRoute><Biblioteca /></ProtectedRoute>} />
+          <Route path="/juegos"              element={<ProtectedRoute><Stats    /></ProtectedRoute>} />
         </Routes>
       </div>
       <IntensityControl />

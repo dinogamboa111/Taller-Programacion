@@ -3,6 +3,7 @@ package com.kydira_api.model;
 import jakarta.persistence.*;
 import lombok.Data;
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Entity
 @Table(name = "quiz")
@@ -21,6 +22,6 @@ public class Quiz {
     @JoinColumn(name = "document_id")
     private Document documentId;
 
-    // user_id eliminado — el usuario se obtiene navegando documentId.userId
-    // Usar QuizRepository.findByDocumentId_UserId_UserId(Long userId) para filtrar por usuario
+    @OneToMany(mappedBy = "quizId", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
+    private List<Question> questions;
 }

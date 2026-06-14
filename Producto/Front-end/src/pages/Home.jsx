@@ -96,7 +96,7 @@ const Home = () => {
         <span style={{
           fontSize: '3rem',
           fontWeight: '900',
-          color: 'white',
+          color: '#f8c950',
           textShadow: '0 4px 15px rgba(0,0,0,0.8)',
           letterSpacing: '1px'
         }}>

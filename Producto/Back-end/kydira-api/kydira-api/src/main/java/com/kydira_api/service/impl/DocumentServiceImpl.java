@@ -1,10 +1,13 @@
 package com.kydira_api.service.impl;
 
+import com.kydira_api.dto.DocumentStatusDTO;
 import com.kydira_api.model.Document;
 import com.kydira_api.model.FileType;
 import com.kydira_api.model.User;
 import com.kydira_api.repository.DocumentRepository;
 import com.kydira_api.repository.FileTypeRepository;
+import com.kydira_api.repository.QuizRepository;
+import com.kydira_api.repository.SummaryRepository;
 import com.kydira_api.repository.UserRepository;
 import com.kydira_api.service.IDocumentService;
 import org.apache.pdfbox.Loader;
@@ -18,6 +21,9 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.InputStream;
 import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @Service
 public class DocumentServiceImpl implements IDocumentService {
@@ -30,6 +36,12 @@ public class DocumentServiceImpl implements IDocumentService {
 
     @Autowired
     private FileTypeRepository fileTypeRepository;
+
+    @Autowired
+    private QuizRepository quizRepository;
+
+    @Autowired
+    private SummaryRepository summaryRepository;
 
     @Override
     public Document uploadDocument(MultipartFile file, Long userId) throws Exception {
@@ -46,18 +58,15 @@ public class DocumentServiceImpl implements IDocumentService {
 
         String extractedText = "";
 
-        // RF-02: Extracción de texto eficiente 
-        try (InputStream is = file.getInputStream()) {
-            if (contentType.equals("application/pdf")) {
-                // Loader.loadPDF(is) es más eficiente que file.getBytes()
-                try (PDDocument pdf = Loader.loadPDF(file.getBytes())) { 
-                    extractedText = new PDFTextStripper().getText(pdf);
-                }
-            } else {
-                try (XWPFDocument docx = new XWPFDocument(is)) {
-                    XWPFWordExtractor extractor = new XWPFWordExtractor(docx);
-                    extractedText = extractor.getText();
-                }
+        // RF-02: Extracción de texto (Versión Camila)
+        if (contentType.equals("application/pdf")) {
+            try (PDDocument pdf = Loader.loadPDF(file.getBytes())) {
+                extractedText = new PDFTextStripper().getText(pdf);
+            }
+        } else {
+            try (InputStream is = file.getInputStream();
+                 XWPFDocument docx = new XWPFDocument(is)) {
+                extractedText = new XWPFWordExtractor(docx).getText();
             }
         }
 
@@ -76,5 +85,31 @@ public class DocumentServiceImpl implements IDocumentService {
         doc.setUploadDate(LocalDateTime.now());
         doc.setUserId(user);
         return documentRepository.save(doc);
+    }
+
+    @Override
+    public List<DocumentStatusDTO> getDocumentsByUser(Long userId) {
+        List<Document> docs = documentRepository.findByUserId_UserId(userId);
+
+        Set<Integer> docsWithQuiz = quizRepository.findByDocumentId_UserId_UserId(userId)
+                .stream()
+                .map(q -> q.getDocumentId().getDocumentId())
+                .collect(Collectors.toSet());
+
+        Set<Integer> docsWithSummary = summaryRepository.findByDocumentId_UserId_UserId(userId)
+                .stream()
+                .map(s -> s.getDocumentId().getDocumentId())
+                .collect(Collectors.toSet());
+
+        return docs.stream()
+                .map(doc -> new DocumentStatusDTO(
+                        doc.getDocumentId(),
+                        doc.getFileName(),
+                        doc.getUploadDate(),
+                        doc.getFileType(),
+                        docsWithQuiz.contains(doc.getDocumentId()),
+                        docsWithSummary.contains(doc.getDocumentId())
+                ))
+                .collect(Collectors.toList());
     }
 }

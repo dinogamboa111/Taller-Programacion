@@ -2,68 +2,123 @@ import { useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Container, Row, Col, Card } from 'react-bootstrap';
 import { motion, AnimatePresence } from 'framer-motion';
-import { BsCloudUpload, BsFileText, BsController, BsMagic } from 'react-icons/bs';
-import { MOCK_SUMMARY, MOCK_TRIVIA, LOADING_STEPS } from '../data/mockDinos';
+import { BsCloudUpload, BsFileText, BsController, BsMagic, BsExclamationTriangle } from 'react-icons/bs';
+import { useAuth } from '../context/AuthContext';
+import { documentoService } from '../services/documentoService';
+import { resumenService } from '../services/resumenService';
+import { quizService } from '../services/quizService';
+
+const STEPS = {
+  summary: [
+    { icon: '📤', msg: 'Subiendo tu documento...' },
+    { icon: '🤖', msg: 'La IA está generando tu resumen...' },
+    { icon: '✨', msg: '¡Listo!' },
+  ],
+  trivia: [
+    { icon: '📤', msg: 'Subiendo tu documento...' },
+    { icon: '🔍', msg: 'Analizando el contenido...' },
+    { icon: '🎮', msg: '¡Preparando la trivia!' },
+  ],
+};
+
+const ALLOWED_MIME = [
+  'application/pdf',
+  'application/msword',
+  'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+];
+const ALLOWED_EXT = ['.pdf', '.doc', '.docx'];
+
+const isValidFile = (f) => {
+  const ext = '.' + f.name.split('.').pop().toLowerCase();
+  return ALLOWED_MIME.includes(f.type) || ALLOWED_EXT.includes(ext);
+};
 
 const Upload = () => {
   const navigate     = useNavigate();
   const fileInputRef = useRef(null);
+  const { user }     = useAuth();
 
   const [isDragging, setIsDragging] = useState(false);
   const [file, setFile]             = useState(null);
   const [loading, setLoading]       = useState(false);
   const [step, setStep]             = useState(0);
   const [stepType, setStepType]     = useState(null);
+  const [error, setError]           = useState(null);
 
-  /* ── Handlers de archivo ── */
   const handleDragOver  = (e) => { e.preventDefault(); setIsDragging(true); };
-  const handleDragLeave = ()  => setIsDragging(false);
+  const handleDragLeave = () => setIsDragging(false);
 
   const handleDrop = (e) => {
     e.preventDefault();
     setIsDragging(false);
-    if (e.dataTransfer.files?.[0]) setFile(e.dataTransfer.files[0]);
+    const dropped = e.dataTransfer.files?.[0];
+    if (!dropped) return;
+    if (!isValidFile(dropped)) {
+      setError('Solo se permiten archivos PDF o Word (.pdf, .doc, .docx)');
+      return;
+    }
+    setError(null);
+    setFile(dropped);
   };
 
   const handleFileInput = (e) => {
-    if (e.target.files?.[0]) setFile(e.target.files[0]);
+    const selected = e.target.files?.[0];
+    if (!selected) return;
+    if (!isValidFile(selected)) {
+      setError('Solo se permiten archivos PDF o Word (.pdf, .doc, .docx)');
+      e.target.value = '';
+      return;
+    }
+    setError(null);
+    setFile(selected);
   };
 
-  /* ── Simulación de carga → navegación ── */
-  const simulate = (type) => {
+  const handleUpload = async (type) => {
+    if (!file || !user) return;
+    setError(null);
     setLoading(true);
-    setStep(0);
     setStepType(type);
+    setStep(0);
 
-    const steps = LOADING_STEPS[type];
-    let current = 0;
+    try {
+      // Paso 1: subir el documento
+      const documento = await documentoService.uploadDocumento(file, user.id);
+      const documentId = documento.documentId;
+      setStep(1);
 
-    const advance = () => {
-      current += 1;
-      if (current < steps.length) {
-        setStep(current);
-        setTimeout(advance, 900);
+      if (type === 'summary') {
+        // Paso 2: generar resumen con Gemini
+        const summaryReal = await resumenService.generarResumen(documentId);
+        setStep(2);
+        await new Promise((r) => setTimeout(r, 700));
+        navigate('/actividades/resumen', {
+          state: {
+            file: { name: file.name, size: file.size },
+            documentId,
+            summaryReal,
+          },
+        });
       } else {
-        // Navegar con AMBOS datasets en el state (resumen y trivia pueden cruzarse)
-        setTimeout(() => {
-          const destination = type === 'summary' ? '/actividades/resumen' : '/actividades/trivia';
-          navigate(destination, {
-            state: {
-              file:    { name: file.name, size: file.size },
-              summary: MOCK_SUMMARY,
-              trivia:  MOCK_TRIVIA,
-            },
-          });
-        }, 600);
+        const existingQuiz = await quizService.generarQuiz(documentId);
+        setStep(2);
+        await new Promise((r) => setTimeout(r, 700));
+        navigate('/actividades/trivia', {
+          state: {
+            file: { name: file.name, size: file.size },
+            documentId,
+            existingQuiz,
+          },
+        });
       }
-    };
-
-    setTimeout(advance, 900);
+    } catch (err) {
+      const msg = err.response?.data || err.message || 'Error al procesar el archivo';
+      setError(typeof msg === 'string' ? msg : 'Error al procesar el archivo');
+      setLoading(false);
+    }
   };
 
-  const steps = stepType ? LOADING_STEPS[stepType] : [];
+  const steps = stepType ? STEPS[stepType] : [];
 
-  /* ── Render ── */
   return (
     <Container className="pt-5 mt-5">
       <motion.div
@@ -75,7 +130,7 @@ const Upload = () => {
           <Col md={10} lg={8}>
             <AnimatePresence mode="wait">
 
-              {/* ── Pantalla de carga ── */}
+              {/* Pantalla de carga */}
               {loading ? (
                 <motion.div
                   key="loading"
@@ -91,7 +146,7 @@ const Upload = () => {
                     <motion.div
                       key={step}
                       initial={{ scale: 0.5, opacity: 0 }}
-                      animate={{ scale: 1,   opacity: 1 }}
+                      animate={{ scale: 1, opacity: 1 }}
                       transition={{ type: 'spring', stiffness: 200 }}
                       style={{ fontSize: '5rem', marginBottom: '1.5rem' }}
                     >
@@ -108,7 +163,6 @@ const Upload = () => {
                       {steps[step]?.msg}
                     </motion.h4>
 
-                    {/* Barra de progreso */}
                     <div style={{ width: '100%', height: 8, borderRadius: 99, background: 'rgba(255,255,255,0.15)', overflow: 'hidden', margin: '0 auto' }}>
                       <motion.div
                         style={{
@@ -144,7 +198,7 @@ const Upload = () => {
 
               ) : (
 
-                /* ── Pantalla de upload ── */
+                /* Pantalla de upload */
                 <motion.div
                   key="upload"
                   initial={{ opacity: 0, scale: 0.95 }}
@@ -154,19 +208,31 @@ const Upload = () => {
                 >
                   <Card
                     className="glass-panel text-white border-0 shadow-lg p-5 text-center"
-                    style={{ backgroundColor: 'rgba(11, 26, 74, 0.4)' }}
+                    style={{ backgroundColor: 'rgba(11,26,74,0.80)' }}
                   >
-                    <h2 className="fw-bold mb-4">Sube tu Documento</h2>
+                    <h2 className="fw-bold mb-4" style={{ color:'#f8c950' }}>Sube tu Documento</h2>
                     <p className="text-light mb-4 fs-5">
-                      Convierte tus lecturas aburridas en resúmenes mágicos o juegos de trivia.
+                      Convierte tus lecturas en resúmenes mágicos o juegos de trivia.
                     </p>
+
+                    {error && (
+                      <motion.div
+                        initial={{ opacity: 0, y: -10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        className="d-flex align-items-center gap-2 p-3 rounded-3 mb-4"
+                        style={{ background: 'rgba(239,83,80,0.18)', border: '2px solid rgba(239,83,80,0.5)', color: '#ffcdd2' }}
+                      >
+                        <BsExclamationTriangle size={20} />
+                        <span>{error}</span>
+                      </motion.div>
+                    )}
 
                     {!file ? (
                       <>
                         <input
                           ref={fileInputRef}
                           type="file"
-                          accept=".pdf,.doc,.docx,.txt"
+                          accept=".pdf,.doc,.docx"
                           style={{ display: 'none' }}
                           onChange={handleFileInput}
                         />
@@ -181,7 +247,7 @@ const Upload = () => {
                           <motion.div animate={{ y: [0, -10, 0] }} transition={{ repeat: Infinity, duration: 2 }}>
                             <BsCloudUpload size={80} className="mb-3 text-warning" />
                           </motion.div>
-                          <h4 className="fw-bold">Arrastra tu PDF aquí</h4>
+                          <h4 className="fw-bold">Arrastra tu PDF o Word aquí</h4>
                           <p className="text-light m-0">o haz clic para buscar en tus archivos</p>
                         </div>
                       </>
@@ -209,14 +275,14 @@ const Upload = () => {
                     >
                       <button
                         className="btn-yellow d-flex align-items-center justify-content-center gap-2 flex-grow-1"
-                        onClick={() => simulate('summary')}
+                        onClick={() => handleUpload('summary')}
                       >
                         <BsMagic size={24} /> Crear Resumen Mágico
                       </button>
                       <button
                         className="btn-space d-flex align-items-center justify-content-center gap-2 flex-grow-1"
                         style={{ background: 'linear-gradient(45deg, #11998e, #38ef7d)' }}
-                        onClick={() => simulate('trivia')}
+                        onClick={() => handleUpload('trivia')}
                       >
                         <BsController size={24} /> Jugar Trivia con esto
                       </button>
@@ -232,69 +298,5 @@ const Upload = () => {
     </Container>
   );
 };
-
-
-/* ─────────────────────────────────────────────────────────────────────────────
-   Upload con backend real
-   Uso: importar handleUploadReal y reemplazar las llamadas a simulate()
-   cuando el backend este disponible.
-
-   Ejemplo de uso en los botones:
-     onClick={() => handleUploadReal(file, user.userId, 'summary', navigate)}
-     onClick={() => handleUploadReal(file, user.userId, 'trivia',  navigate)}
-   ───────────────────────────────────────────────────────────────────────────── */
-
-import { documentoService } from '../services/documentoService';
-import { resumenService    } from '../services/resumenService';
-
-// Sube el archivo, genera el contenido solicitado y navega al destino
-// Params:
-//   file      - File seleccionado por el usuario
-//   userId    - ID del usuario en sesion
-//   type      - 'summary' | 'trivia'
-//   navigate  - funcion navigate de react-router
-//   setLoading - setter del estado de carga
-//   setError   - setter para mostrar errores (opcional)
-export const handleUploadReal = async (file, userId, type, navigate, setLoading, setError) => {
-  try {
-    setLoading(true);
-
-    // Paso 1: subir el documento al backend
-    const documento = await documentoService.uploadDocumento(file, userId);
-    const documentId = documento.documentId;
-
-    if (type === 'summary') {
-      // Paso 2a: generar resumen con IA
-      const resumenData = await resumenService.generarResumen(documentId);
-
-      navigate('/actividades/resumen', {
-        state: {
-          file:       { name: file.name, size: file.size },
-          documentId,
-          // El backend devuelve { fileName, summary }
-          // Se adapta al shape que espera Resumen.jsx
-          summaryReal: resumenData,
-        },
-      });
-    } else {
-      // Paso 2b: para trivia, solo navegar con el documentId
-      // El quiz se genera desde la vista de trivia
-      navigate('/actividades/trivia', {
-        state: {
-          file:       { name: file.name, size: file.size },
-          documentId,
-        },
-      });
-    }
-  } catch (err) {
-    const msg = err.response?.data?.message || err.message || 'Error al procesar el archivo';
-    if (setError) setError(msg);
-  } finally {
-    setLoading(false);
-  }
-};
-
-
-
 
 export default Upload;

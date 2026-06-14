@@ -1,5 +1,6 @@
 package com.kydira_api.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import java.util.List;
 
 import jakarta.persistence.*;
@@ -18,6 +19,7 @@ public class Question {
 
     private Integer sortOrder;
 
+    @JsonIgnore
     @ManyToOne
     @JoinColumn(name = "quiz_id")
     private Quiz quizId;
