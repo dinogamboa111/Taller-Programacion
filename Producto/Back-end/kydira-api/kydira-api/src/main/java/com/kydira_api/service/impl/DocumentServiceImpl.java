@@ -58,7 +58,7 @@ public class DocumentServiceImpl implements IDocumentService {
 
         String extractedText = "";
 
-        // RF-02: Extracción de texto
+        // RF-02: Extracción de texto (Versión Camila)
         if (contentType.equals("application/pdf")) {
             try (PDDocument pdf = Loader.loadPDF(file.getBytes())) {
                 extractedText = new PDFTextStripper().getText(pdf);

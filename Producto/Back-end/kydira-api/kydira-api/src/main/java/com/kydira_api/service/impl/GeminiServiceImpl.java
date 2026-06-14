@@ -22,8 +22,12 @@ public class GeminiServiceImpl implements IGeminiService {
 
     @Value("${gemini.api.key}")
     private String apiKey;
+    
+    // Probando Modelos
+    
+    //private final String API_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=";
 
-   
+    // Se mantiene la versión de la rama CamilaDev
     private final String API_URL = "https://generativelanguage.googleapis.com/v1/models/gemini-2.5-flash-lite:generateContent?key=";
 
     @SuppressWarnings("unchecked")
