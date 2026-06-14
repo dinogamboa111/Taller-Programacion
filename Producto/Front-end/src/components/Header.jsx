@@ -18,9 +18,10 @@ const Header = () => {
 
   const navItems = isLoggedIn 
     ? [
-        { label: 'Home', path: '/' },
+        { label: 'Home',       path: '/' },
         { label: 'Actividades', path: '/actividades' },
-        { label: 'Juegos', path: '/juegos' }
+        { label: 'Biblioteca',  path: '/biblioteca' },
+        { label: 'Juegos',      path: '/juegos' }
       ]
     : [
         { label: 'Home', path: '/' },

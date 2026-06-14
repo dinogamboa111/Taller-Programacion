@@ -16,7 +16,7 @@ const IntensityControl = () => {
   const current = LEVEL_STYLES[intensity];
 
   return (
-    <div style={{ position: 'fixed', bottom: 24, left: 24, zIndex: 1000 }}>
+    <div style={{ position: 'fixed', bottom: 58, right: 24, zIndex: 1000 }}>
 
       <AnimatePresence>
         {isOpen && (
@@ -28,7 +28,7 @@ const IntensityControl = () => {
             style={{
               position: 'absolute',
               bottom: 60,
-              left: 0,
+              right: 0,
               background: 'rgba(6, 14, 50, 0.94)',
               backdropFilter: 'blur(16px)',
               WebkitBackdropFilter: 'blur(16px)',

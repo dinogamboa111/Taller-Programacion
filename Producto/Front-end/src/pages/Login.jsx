@@ -50,9 +50,9 @@ const Login = () => {
         transition={{ duration: 0.5 }}
         style={{ width: '100%', maxWidth: '500px' }}
       >
-        <Card className="glass-panel text-white border-0 shadow-lg p-5" style={{ backgroundColor: 'rgba(11, 26, 74, 0.6)' }}>
+        <Card className="glass-panel text-white border-0 shadow-lg p-5" style={{ backgroundColor: 'rgba(11,26,74,0.80)' }}>
           <div className="text-center mb-4">
-            <h2 className="fw-bold mb-2">{isRegistering ? 'Crear Cuenta' : 'Iniciar Sesión'}</h2>
+            <h2 className="fw-bold mb-2" style={{ color:'#f8c950' }}>{isRegistering ? 'Crear Cuenta' : 'Iniciar Sesion'}</h2>
             <p className="text-light">{isRegistering ? 'Únete a Kidyra' : '¡Bienvenido de vuelta a Kidyra!'}</p>
           </div>
 

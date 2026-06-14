@@ -1,8 +1,6 @@
 package com.kydira_api.controller;
 
-import com.kydira_api.model.Document;
-import com.kydira_api.repository.DocumentRepository;
-import com.kydira_api.service.IGeminiService;
+import com.kydira_api.service.ISummaryService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -11,27 +9,28 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/api/summary")
-
 public class SummaryController {
 
     @Autowired
-    private DocumentRepository documentRepository;
+    private ISummaryService summaryService;
 
-    @Autowired
-    private IGeminiService geminiService;
+    @GetMapping("/document/{documentId}")
+    public ResponseEntity<?> getSummaryByDocument(@PathVariable Integer documentId) {
+        Map<String, String> result = summaryService.getSummaryByDocument(documentId);
+        if (result == null) return ResponseEntity.notFound().build();
+        return ResponseEntity.ok(result);
+    }
+
+    @DeleteMapping("/document/{documentId}")
+    public ResponseEntity<?> deleteSummaryByDocument(@PathVariable Integer documentId) {
+        summaryService.deleteSummaryByDocument(documentId);
+        return ResponseEntity.ok("Resumen eliminado correctamente.");
+    }
 
     @GetMapping("/generate/{documentId}")
     public ResponseEntity<?> generateSummary(@PathVariable Integer documentId) {
         try {
-            Document doc = documentRepository.findById(documentId)
-                .orElseThrow(() -> new RuntimeException("Documento no encontrado"));
-
-            String summary = geminiService.summarizeDocument(doc.getRawContent());
-            
-            return ResponseEntity.ok(Map.of(
-                "fileName", doc.getFileName(),
-                "summary", summary
-            ));
+            return ResponseEntity.ok(summaryService.generateSummary(documentId));
         } catch (Exception e) {
             return ResponseEntity.badRequest().body("Error: " + e.getMessage());
         }

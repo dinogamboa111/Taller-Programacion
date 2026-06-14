@@ -16,7 +16,7 @@ export const documentoService = {
     formData.append('userId', userId);
 
     const { data } = await api.post(ENDPOINTS.DOCUMENTOS.UPLOAD, formData, {
-      headers: { 'Content-Type': 'multipart/form-data' },
+      headers: { 'Content-Type': undefined },
     });
     return data;
   },

@@ -20,10 +20,10 @@ public class Document {
     private FileType fileType;
 
     @Column(columnDefinition = "TEXT")
-    private String rawContent; // Aquí guardaremos el texto extraído
+    private String rawContent;
 
     @Column(columnDefinition = "TEXT")
-    private String apiResponse; // Para auditoría del JSON de Gemini [cite: 119]
+    private String apiResponse;
 
     private LocalDateTime uploadDate;
 
