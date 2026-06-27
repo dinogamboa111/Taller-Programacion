@@ -88,7 +88,7 @@ const StatusChip = ({ done, labelDone, labelPending, emojDone, emojPending, acce
 );
 
 /* ── Tarjeta de documento ────────────────────────────────────── */
-const DocCard = ({ doc, paletteIndex, status, busy, onResumen, onTrivia, onDelete }) => {
+const DocCard = ({ doc, paletteIndex, status, busy, onResumen, onTrivia, onDelete, cardError }) => {
   const palette    = PALETTES[paletteIndex % PALETTES.length];
   const typeName   = doc.fileType?.typeName?.toUpperCase() || 'DOC';
   const hasQuiz    = status?.hasQuiz    ?? false;
@@ -97,11 +97,10 @@ const DocCard = ({ doc, paletteIndex, status, busy, onResumen, onTrivia, onDelet
   const isBusyTriv = busy?.id === doc.documentId && busy?.action === 'trivia';
   const anyBusy    = isBusyRes || isBusyTriv;
 
+  // ✅ Botón principal siempre apunta a resumen con estilo amarillo
   const primary = hasSummary
-    ? { label:'Ver Resumen',  icon:'📖', fn:onResumen, loading:isBusyRes,  loadLabel:'Cargando' }
-    : hasQuiz
-    ? { label:'Jugar Trivia', icon:'🎮', fn:onTrivia,  loading:isBusyTriv, loadLabel:'Cargando' }
-    : { label:'Explorar',     icon:'🚀', fn:onResumen, loading:isBusyRes,  loadLabel:'Preparando' };
+    ? { label:'Ver Resumen',       icon:<BsMagic size={13}/>,      fn:onResumen, loading:isBusyRes,  loadLabel:'Cargando...', style:{ background:'linear-gradient(45deg,#f8c950,#ffd666)', color:'#1a1a2e' } }
+    : { label:'Crear Resumen Mágico', icon:<BsMagic size={13}/>,   fn:onResumen, loading:isBusyRes,  loadLabel:'Generando...', style:{ background:'linear-gradient(45deg,#f8c950,#ffd666)', color:'#1a1a2e' } };
 
   return (
     <motion.div
@@ -175,11 +174,11 @@ const DocCard = ({ doc, paletteIndex, status, busy, onResumen, onTrivia, onDelet
         disabled={anyBusy}
         style={{
           width:'100%', minHeight:44, borderRadius:11, border:'none',
-          background: anyBusy && !primary.loading ? 'rgba(0,0,0,0.06)' : palette.grad,
-          color: anyBusy && !primary.loading ? 'rgba(0,0,0,0.28)' : '#fff',
+          background: anyBusy && !primary.loading ? 'rgba(0,0,0,0.06)' : (primary.style?.background || palette.grad),
+          color: anyBusy && !primary.loading ? 'rgba(0,0,0,0.28)' : (primary.style?.color || '#fff'),
           fontWeight:900, fontSize:'0.95rem', letterSpacing:0.2,
           cursor: anyBusy ? 'wait' : 'pointer',
-          boxShadow: anyBusy && !primary.loading ? 'none' : `0 5px 18px ${palette.accent}60`,
+          boxShadow: anyBusy && !primary.loading ? 'none' : `0 5px 18px rgba(248,180,0,0.4)`,
           display:'flex', alignItems:'center', justifyContent:'center', gap:7,
           transition:'all 0.2s', marginTop:2,
         }}
@@ -196,37 +195,34 @@ const DocCard = ({ doc, paletteIndex, status, busy, onResumen, onTrivia, onDelet
         }
       </button>
 
-      {/* Acciones secundarias */}
+      {/* Mensaje de error de IA */}
+      {cardError && (
+        <p style={{ fontSize:'0.7rem', color:'#f87171', textAlign:'center', margin:0, marginTop:2 }}>
+          ¡Ups! La IA está saturada, intenta de nuevo 🤖
+        </p>
+      )}
+
+      {/* Botón de trivia siempre visible */}
       <div style={{ display:'flex', gap:5 }}>
-        {hasSummary && (
-          <button onClick={() => onTrivia(doc)} disabled={anyBusy}
-            title={hasQuiz ? 'Jugar Trivia' : 'Crear Trivia'}
-            style={{
-              flex:1, minHeight:30, borderRadius:7,
-              background: hasQuiz ? 'rgba(16,185,129,0.15)' : 'rgba(255,255,255,0.05)',
-              border:`1.5px solid ${hasQuiz ? 'rgba(16,185,129,0.45)' : 'rgba(255,255,255,0.12)'}`,
-              color: hasQuiz ? '#34D399' : 'rgba(255,255,255,0.28)',
-              fontWeight:700, fontSize:'0.7rem',
-              cursor: anyBusy ? 'not-allowed' : 'pointer',
-              display:'flex', alignItems:'center', justifyContent:'center', gap:3,
-              transition:'all 0.2s',
-            }}>
-            <BsController size={10}/>{hasQuiz ? 'Trivia' : 'Crear Trivia'}
-          </button>
-        )}
-        {!hasSummary && hasQuiz && (
-          <button onClick={() => onResumen(doc)} disabled={anyBusy}
-            style={{
-              flex:1, minHeight:30, borderRadius:7,
-              background:'rgba(139,92,246,0.12)', border:'1.5px solid rgba(139,92,246,0.35)',
-              color:'#A78BFA', fontWeight:700, fontSize:'0.7rem',
-              cursor: anyBusy ? 'not-allowed' : 'pointer',
-              display:'flex', alignItems:'center', justifyContent:'center', gap:3,
-              transition:'all 0.2s',
-            }}>
-            <BsMagic size={10}/>Resumen
-          </button>
-        )}
+        <button
+          onClick={() => onTrivia(doc)}
+          disabled={anyBusy}
+          title={hasQuiz ? 'Jugar Trivia' : 'Crear Trivia'}
+          style={{
+            flex:1, minHeight:34, borderRadius:7, border:'none',
+            background: hasQuiz
+              ? 'linear-gradient(45deg,#11998e,#38ef7d)'
+              : 'rgba(17,153,142,0.15)',
+            border: hasQuiz ? 'none' : '1.5px solid rgba(17,153,142,0.45)',
+            color: hasQuiz ? '#fff' : '#38ef7d',
+            fontWeight:700, fontSize:'0.72rem',
+            cursor: anyBusy ? 'not-allowed' : 'pointer',
+            display:'flex', alignItems:'center', justifyContent:'center', gap:4,
+            transition:'all 0.2s',
+          }}>
+          <BsController size={11}/>{hasQuiz ? 'Jugar Trivia' : 'Crear Trivia'}
+        </button>
+
         <button onClick={() => onDelete(doc)} disabled={anyBusy} title="Eliminar"
           style={{
             width:30, height:30, borderRadius:7, flexShrink:0,
@@ -407,6 +403,7 @@ const Biblioteca = () => {
   const [filter,    setFilter]    = useState('all');
   const [tipVisible, setTipVisible] = useState(true);
   const [tipIndex]   = useState(() => Math.floor(Math.random() * TIPS.length));
+  const [cardError, setCardError] = useState(null);
 
   const fetchDocs = useCallback(async () => {
     setLoading(true);
@@ -434,6 +431,7 @@ const Biblioteca = () => {
 
   const handleResumen = async (doc) => {
     setBusy({ id:doc.documentId, action:'resumen' });
+    setCardError(null);
     try {
       let summaryReal;
       if (docStatus[doc.documentId]?.hasSummary) {
@@ -445,11 +443,12 @@ const Biblioteca = () => {
       navigate('/actividades/resumen', {
         state: { file: { name:doc.fileName }, documentId:doc.documentId, summaryReal, fromBiblioteca:true },
       });
-    } catch { setBusy(null); }
+    } catch { setBusy(null); setCardError(doc.documentId); }
   };
 
   const handleTrivia = async (doc) => {
     setBusy({ id:doc.documentId, action:'trivia' });
+    setCardError(null);
     try {
       let existingQuiz;
       if (docStatus[doc.documentId]?.hasQuiz) {
@@ -462,7 +461,7 @@ const Biblioteca = () => {
       navigate('/actividades/trivia', {
         state: { file: { name:doc.fileName }, documentId:doc.documentId, existingQuiz, fromBiblioteca:true },
       });
-    } catch { setBusy(null); }
+    } catch { setBusy(null); setCardError(doc.documentId); }
   };
 
   const handleDeleted = (docId) => setDocs((prev) => prev.filter((d) => d.documentId !== docId));
@@ -622,6 +621,7 @@ const Biblioteca = () => {
                       onResumen={handleResumen}
                       onTrivia={handleTrivia}
                       onDelete={setModal}
+                      cardError={cardError === doc.documentId}
                     />
                   </Col>
                 );

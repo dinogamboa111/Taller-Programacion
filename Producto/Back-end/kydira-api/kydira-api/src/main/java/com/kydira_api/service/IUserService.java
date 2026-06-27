@@ -13,4 +13,6 @@ public interface IUserService {
     User updateProfile(Long id, UserDTO userDTO); // Para la US-14
 
     User login(String email, String password);
+
+    void deleteAccount(Long id, String password); // Eliminar cuenta y sus datos asociados
 }

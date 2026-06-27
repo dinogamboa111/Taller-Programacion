@@ -1,6 +1,7 @@
 package com.kydira_api.controller;
 
 import com.kydira_api.dto.DocumentStatusDTO;
+import com.kydira_api.model.Document;
 import com.kydira_api.repository.DocumentRepository;
 import com.kydira_api.service.IDocumentService;
 
@@ -24,7 +25,17 @@ public class DocumentController {
     @PostMapping("/upload")
     public ResponseEntity<?> upload(@RequestParam("file") MultipartFile file, @RequestParam("userId") Long userId) {
         try {
-            return ResponseEntity.ok(documentService.uploadDocument(file, userId));
+            Document doc = documentService.uploadDocument(file, userId);
+            // Devolver DTO con hasQuiz y hasSummary en false (recién subido)
+            DocumentStatusDTO dto = new DocumentStatusDTO(
+                doc.getDocumentId(),
+                doc.getFileName(),
+                doc.getUploadDate(),
+                doc.getFileType(),
+                false,
+                false
+            );
+            return ResponseEntity.ok(dto);
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
