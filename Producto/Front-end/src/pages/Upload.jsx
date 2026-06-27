@@ -44,6 +44,8 @@ const Upload = () => {
   const [step, setStep]             = useState(0);
   const [stepType, setStepType]     = useState(null);
   const [error, setError]           = useState(null);
+  const [overloaded, setOverloaded] = useState(false);
+  const [documentId, setDocumentId] = useState(null); //  Cambio 1
 
   const handleDragOver  = (e) => { e.preventDefault(); setIsDragging(true); };
   const handleDragLeave = () => setIsDragging(false);
@@ -59,6 +61,7 @@ const Upload = () => {
     }
     setError(null);
     setFile(dropped);
+    setDocumentId(null); //  Cambio 4
   };
 
   const handleFileInput = (e) => {
@@ -71,48 +74,62 @@ const Upload = () => {
     }
     setError(null);
     setFile(selected);
+    setDocumentId(null); //  Cambio 4
   };
 
   const handleUpload = async (type) => {
     if (!file || !user) return;
     setError(null);
+    setOverloaded(false);
     setLoading(true);
     setStepType(type);
     setStep(0);
 
     try {
-      // Paso 1: subir el documento
-      const documento = await documentoService.uploadDocumento(file, user.id);
-      const documentId = documento.documentId;
+      //  Cambio 2: subir el documento solo si no fue subido antes
+      let docId = documentId;
+      if (!docId) {
+        const documento = await documentoService.uploadDocumento(file, user.id);
+        docId = documento.documentId;
+        setDocumentId(docId);
+      }
       setStep(1);
 
       if (type === 'summary') {
         // Paso 2: generar resumen con Gemini
-        const summaryReal = await resumenService.generarResumen(documentId);
+        const summaryReal = await resumenService.generarResumen(docId); // ✅ Cambio 3
         setStep(2);
         await new Promise((r) => setTimeout(r, 700));
         navigate('/actividades/resumen', {
           state: {
             file: { name: file.name, size: file.size },
-            documentId,
+            documentId: docId, // ✅ Cambio 3
             summaryReal,
           },
         });
       } else {
-        const existingQuiz = await quizService.generarQuiz(documentId);
+        const existingQuiz = await quizService.generarQuiz(docId); //  Cambio 3
         setStep(2);
         await new Promise((r) => setTimeout(r, 700));
         navigate('/actividades/trivia', {
           state: {
             file: { name: file.name, size: file.size },
-            documentId,
+            documentId: docId, //  Cambio 3
             existingQuiz,
           },
         });
       }
     } catch (err) {
       const msg = err.response?.data || err.message || 'Error al procesar el archivo';
-      setError(typeof msg === 'string' ? msg : 'Error al procesar el archivo');
+      const text = typeof msg === 'string' ? msg : 'Error al procesar el archivo';
+      const isOverloaded = /503|sobrecargad|overloaded|UNAVAILABLE|high demand|429|Too Many Requests|quota|RESOURCE_EXHAUSTED/i.test(text);
+      if (isOverloaded) {
+        setOverloaded(true);
+        setError(null);
+      } else {
+        setOverloaded(false);
+        setError(text);
+      }
       setLoading(false);
     }
   };
@@ -214,6 +231,24 @@ const Upload = () => {
                     <p className="text-light mb-4 fs-5">
                       Convierte tus lecturas en resúmenes mágicos o juegos de trivia.
                     </p>
+
+                    {overloaded && (
+                      <motion.div
+                        initial={{ opacity: 0, y: -10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        className="d-flex align-items-center gap-3 p-3 rounded-3 mb-4 text-start"
+                        style={{ background: 'rgba(248,201,80,0.12)', border: '2px solid rgba(248,201,80,0.5)', color: '#fff' }}
+                      >
+                        <span style={{ fontSize: '2rem', lineHeight: 1 }}>🪐</span>
+                        <div>
+                          <p className="fw-bold mb-1" style={{ color: '#f8c950' }}>Nuestra IA está un poco saturada</p>
+                          <p className="mb-0" style={{ fontSize: '0.9rem', opacity: 0.85 }}>
+                            Estamos usando el plan gratuito de la IA, así que en momentos de alta demanda
+                            puede tardar más de lo normal. Intenta nuevamente en unos minutos.
+                          </p>
+                        </div>
+                      </motion.div>
+                    )}
 
                     {error && (
                       <motion.div

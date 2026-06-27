@@ -24,5 +24,6 @@ export const ENDPOINTS = {
   },
   PERFIL: {
     UPDATE: (id) => `/users/profile/${id}`,
+    DELETE: (id) => `/users/${id}`,
   },
 };

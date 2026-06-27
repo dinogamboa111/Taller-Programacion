@@ -24,4 +24,14 @@ public class UserController {
     public ResponseEntity<?> update(@PathVariable Long id, @RequestBody UserDTO userDTO) {
         return ResponseEntity.ok(userService.updateProfile(id, userDTO));
     }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<?> deleteAccount(@PathVariable Long id, @RequestBody java.util.Map<String, String> body) {
+        try {
+            userService.deleteAccount(id, body.get("password"));
+            return ResponseEntity.ok().build();
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
 }

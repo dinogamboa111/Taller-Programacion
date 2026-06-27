@@ -22,11 +22,23 @@ api.interceptors.request.use(
 api.interceptors.response.use(
   (response) => response,
   (error) => {
-    if (error.response?.status === 401) {
+    const isLoginRequest = error.config?.url?.includes('/auth/login');
+
+    if (error.response?.status === 401 && !isLoginRequest) {
       localStorage.removeItem('auth_token');
       localStorage.removeItem('auth_user');
       window.location.href = '/login';
     }
+
+    if (error.response?.status === 429) {
+      const friendly429 = new Error(
+        '¡Ups! La IA está un poco saturada en este momento. ' +
+        'Espera unos segundos y vuelve a intentarlo. 🤖💤'
+      );
+      friendly429.is429 = true;
+      return Promise.reject(friendly429);
+    }
+
     return Promise.reject(error);
   }
 );
