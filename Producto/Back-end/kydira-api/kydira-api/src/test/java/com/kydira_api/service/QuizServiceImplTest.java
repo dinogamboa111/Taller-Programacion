@@ -13,6 +13,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import com.kydira_api.service.IGeminiService;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -69,7 +70,7 @@ class QuizServiceImplTest {
 
     @Test
     @DisplayName("UT-QS-02: Generar quiz con documento inexistente lanza excepción")
-    void createQuizFromDocument_ConDocumentoInexistente_DebeArrojarExcepcion() {
+    void createQuizFromDocument_ConDocumentoInexistente_DebeArrojarExcepcion() throws Exception {
         when(documentRepository.findById(99)).thenReturn(Optional.empty());
 
         assertThatThrownBy(() -> quizService.createQuizFromDocument(99))
