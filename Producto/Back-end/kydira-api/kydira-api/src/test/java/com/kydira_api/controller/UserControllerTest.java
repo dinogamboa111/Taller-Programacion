@@ -3,14 +3,16 @@ package com.kydira_api.controller;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.kydira_api.dto.UserDTO;
 import com.kydira_api.model.User;
+import com.kydira_api.security.CustomUserDetailsService;
+import com.kydira_api.security.JwtUtil;
 import com.kydira_api.service.IUserService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.security.servlet.UserDetailsServiceAutoConfiguration;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.context.annotation.Import;
 import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
@@ -25,15 +27,16 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
  * Pruebas FUNCIONALES del UserController.
  * Verifican el comportamiento del endpoint HTTP completo (entrada/salida/status code).
  */
-@WebMvcTest(UserController.class)
+@WebMvcTest(controllers = UserController.class, excludeAutoConfiguration = {UserDetailsServiceAutoConfiguration.class})
 @DisplayName("UserController - Pruebas Funcionales")
 class UserControllerTest {
 
     @Autowired
     private MockMvc mockMvc;
 
-    @MockBean
-    private IUserService userService;
+    @MockBean private IUserService userService;
+    @MockBean private JwtUtil jwtUtil;
+    @MockBean private CustomUserDetailsService customUserDetailsService;
 
     @Autowired
     private ObjectMapper objectMapper;
@@ -90,7 +93,7 @@ class UserControllerTest {
     }
 
     @Test
-    @DisplayName("FT-UC-03: Actualizar perfil con ID inexistente retorna error")
+    @DisplayName("FT-UC-03: Actualizar perfil con ID inexistente retorna HTTP 400 con mensaje de error")
     @WithMockUser
     void updateProfile_ConIdInexistente_DebeRetornarError() throws Exception {
         when(userService.updateProfile(eq(99L), any(UserDTO.class)))
@@ -100,7 +103,8 @@ class UserControllerTest {
                         .with(csrf())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(userDTO)))
-                .andExpect(status().isBadRequest());
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.message").value("Usuario no encontrado"));
     }
 
     // ===================== DELETE /api/users/{id} =====================

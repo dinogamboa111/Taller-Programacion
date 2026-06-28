@@ -3,11 +3,13 @@ package com.kydira_api.controller;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.kydira_api.model.User;
 import com.kydira_api.repository.UserRepository;
+import com.kydira_api.security.CustomUserDetailsService;
 import com.kydira_api.security.JwtUtil;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.security.servlet.UserDetailsServiceAutoConfiguration;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
@@ -15,7 +17,6 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -32,7 +33,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 /**
  * Pruebas FUNCIONALES del AuthController.
  */
-@WebMvcTest(AuthController.class)
+@WebMvcTest(controllers = AuthController.class, excludeAutoConfiguration = {UserDetailsServiceAutoConfiguration.class})
 @DisplayName("AuthController - Pruebas Funcionales")
 class AuthControllerTest {
 
@@ -40,9 +41,9 @@ class AuthControllerTest {
     private MockMvc mockMvc;
 
     @MockBean private AuthenticationManager authenticationManager;
-    @MockBean private UserDetailsService userDetailsService;
     @MockBean private JwtUtil jwtUtil;
     @MockBean private UserRepository userRepository;
+    @MockBean private CustomUserDetailsService customUserDetailsService;
 
     @Autowired
     private ObjectMapper objectMapper;
@@ -70,7 +71,7 @@ class AuthControllerTest {
     void login_ConCredencialesValidas_DebeRetornar200ConToken() throws Exception {
         when(authenticationManager.authenticate(any(UsernamePasswordAuthenticationToken.class)))
                 .thenReturn(null);
-        when(userDetailsService.loadUserByUsername("test@kydira.com")).thenReturn(userDetails);
+        when(customUserDetailsService.loadUserByUsername("test@kydira.com")).thenReturn(userDetails);
         when(jwtUtil.generateToken(userDetails)).thenReturn("jwt.token.generado");
         when(userRepository.findByEmail("test@kydira.com")).thenReturn(Optional.of(user));
 
