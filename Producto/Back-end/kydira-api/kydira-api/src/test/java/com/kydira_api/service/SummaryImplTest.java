@@ -117,7 +117,7 @@ class SummaryImplTest {
 
     @Test
     @DisplayName("UT-SU-06: Generar resumen con documento inexistente lanza excepción")
-    void generateSummary_ConDocumentoInexistente_DebeArrojarExcepcion() {
+    void generateSummary_ConDocumentoInexistente_DebeArrojarExcepcion() throws Exception {
         when(documentRepository.findById(99)).thenReturn(Optional.empty());
 
         assertThatThrownBy(() -> summaryService.generateSummary(99))

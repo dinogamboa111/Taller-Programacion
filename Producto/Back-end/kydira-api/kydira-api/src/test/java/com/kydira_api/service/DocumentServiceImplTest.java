@@ -86,18 +86,40 @@ class DocumentServiceImplTest {
     }
 
     @Test
-    @DisplayName("UT-DS-04: Subir PDF con FileType no configurado lanza excepción")
-    void uploadDocument_ConFileTypeNoEncontrado_DebeArrojarExcepcion() {
-        // Usamos un PDF mínimo real para que PDFBox lo acepte
-        // Como el mock de FileType puede fallar, verificamos que el flujo llega hasta ese punto
+    @DisplayName("UT-DS-04: PDF con bytes malformados lanza IOException de PDFBox")
+    void uploadDocument_ConPdfMalformado_DebeArrojarIOException() {
+        // PDFBox rechaza cualquier byte array que no tenga cabecera válida (%PDF-).
+        // El flujo llega hasta la extracción de texto porque el usuario existe y el contentType es válido.
         when(userRepository.findById(1L)).thenReturn(Optional.of(user));
-        when(fileTypeRepository.findByTypeName("PDF")).thenReturn(Optional.empty());
 
-        // El PDF inválido fallará antes en PDFBox; esto verifica el comportamiento de formato inválido
         MultipartFile file = new MockMultipartFile("file", "test.pdf", "application/pdf", new byte[]{1, 2, 3});
 
         assertThatThrownBy(() -> documentService.uploadDocument(file, 1L))
-                .isInstanceOf(Exception.class);
+                .isInstanceOf(Exception.class)
+                .isNotInstanceOf(RuntimeException.class);
+    }
+
+    @Test
+    @DisplayName("UT-DS-04b: FileType 'PDF' no registrado en catálogo lanza excepción con mensaje claro")
+    void uploadDocument_ConFileTypeNoEncontrado_DebeArrojarExcepcionDetalles() throws Exception {
+        // PDF mínimo válido para que PDFBox lo procese sin error
+        byte[] minimalPdf = (
+            "%PDF-1.4\n1 0 obj<</Type/Catalog/Pages 2 0 R>>endobj\n" +
+            "2 0 obj<</Type/Pages/Kids[3 0 R]/Count 1>>endobj\n" +
+            "3 0 obj<</Type/Page/Parent 2 0 R/MediaBox[0 0 3 3]>>endobj\n" +
+            "xref\n0 4\n0000000000 65535 f\n0000000009 00000 n\n" +
+            "0000000058 00000 n\n0000000115 00000 n\n" +
+            "trailer<</Size 4/Root 1 0 R>>\nstartxref\n190\n%%EOF"
+        ).getBytes();
+
+        when(userRepository.findById(1L)).thenReturn(Optional.of(user));
+        when(fileTypeRepository.findByTypeName("PDF")).thenReturn(Optional.empty());
+
+        MultipartFile file = new MockMultipartFile("file", "test.pdf", "application/pdf", minimalPdf);
+
+        assertThatThrownBy(() -> documentService.uploadDocument(file, 1L))
+                .isInstanceOf(RuntimeException.class)
+                .hasMessageContaining("PDF");
     }
 
     // ===================== getDocumentsByUser =====================

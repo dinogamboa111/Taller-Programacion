@@ -4,7 +4,10 @@ import com.kydira_api.dto.DocumentStatusDTO;
 import com.kydira_api.model.*;
 import com.kydira_api.repository.DocumentRepository;
 import com.kydira_api.repository.QuizRepository;
+import com.kydira_api.security.CustomUserDetailsService;
+import com.kydira_api.security.JwtUtil;
 import com.kydira_api.service.IDocumentService;
+import org.springframework.boot.autoconfigure.security.servlet.UserDetailsServiceAutoConfiguration;
 import com.kydira_api.service.IGeminiService;
 import com.kydira_api.service.IQuizService;
 import com.kydira_api.service.ISummaryService;
@@ -32,7 +35,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 /**
  * Pruebas FUNCIONALES de DocumentController, QuizController y SummaryController.
  */
-@WebMvcTest({DocumentController.class, QuizController.class, SummaryController.class})
+@WebMvcTest(controllers = {DocumentController.class, QuizController.class, SummaryController.class},
+        excludeAutoConfiguration = {UserDetailsServiceAutoConfiguration.class})
 @DisplayName("Controllers REST - Pruebas Funcionales")
 class RestControllersTest {
 
@@ -45,6 +49,8 @@ class RestControllersTest {
     @MockBean private QuizRepository quizRepository;
     @MockBean private IGeminiService geminiService;
     @MockBean private ISummaryService summaryService;
+    @MockBean private JwtUtil jwtUtil;
+    @MockBean private CustomUserDetailsService customUserDetailsService;
 
     // ==================== DocumentController ====================
 
@@ -193,6 +199,32 @@ class RestControllersTest {
         mockMvc.perform(get("/api/quiz/document/1").with(csrf()))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$").isArray());
+    }
+
+    @Test
+    @DisplayName("FT-QC-07: GET quizzes por usuario retorna lista HTTP 200")
+    @WithMockUser
+    void getQuizzesByUser_DebeRetornar200ConLista() throws Exception {
+        Quiz quiz = new Quiz();
+        quiz.setQuizId(1);
+        quiz.setTitle("Trivia usuario");
+
+        when(quizRepository.findByDocumentId_UserId_UserId(1L)).thenReturn(List.of(quiz));
+
+        mockMvc.perform(get("/api/quiz/user/1").with(csrf()))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$").isArray())
+                .andExpect(jsonPath("$[0].quizId").value(1));
+    }
+
+    @Test
+    @DisplayName("FT-QC-08: GET quiz por ID inexistente retorna HTTP 400")
+    @WithMockUser
+    void getQuizById_ConIdInexistente_DebeRetornar400() throws Exception {
+        when(quizRepository.findById(99)).thenReturn(Optional.empty());
+
+        mockMvc.perform(get("/api/quiz/99").with(csrf()))
+                .andExpect(status().isBadRequest());
     }
 
     // ==================== SummaryController ====================
