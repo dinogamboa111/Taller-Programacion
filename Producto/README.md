@@ -128,7 +128,7 @@ cd "Back-end/kydira-api/kydira-api"
 **Compilar y ejecutar:**
 
 ```
-np
+mvnw.cmd spring-boot.run
 ```
 
 > En Linux/Mac: `./mvnw spring-boot:run`
